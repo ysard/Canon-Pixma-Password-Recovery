@@ -29,7 +29,6 @@ Usage:
 """
 import sys
 from pathlib import Path
-from binascii import hexlify, unhexlify
 
 # Keys: Chapter in the printed configuration page (if available), ID
 # Values: List of tuples with offsets and one value of the following meanings:
@@ -90,6 +89,7 @@ DATA = {
 def read_until_null(f_d) -> bytes:
     """Search a null terminated string at the current position
 
+    :raises ValueError: If no NULL char is found.
     :param f_d: File descriptor on the opened file.
     :type f_d: io.TextIOWrapper
     """
@@ -98,6 +98,8 @@ def read_until_null(f_d) -> bytes:
         if char == b"\x00":
             return text.decode()
         text += char
+
+    raise ValueError("NULL char was not found")
 
 
 def extract_multi_pos(f_d, positions, debug=False) -> str:
@@ -118,7 +120,8 @@ def extract_multi_pos(f_d, positions, debug=False) -> str:
             text = read_until_null(f_d)
             text_entries.add(text)
             continue
-        elif length is None:
+
+        if length is None:
             # Length is at the 1st byte of the current position
             length = int.from_bytes(f_d.read(1), byteorder="big")
 
