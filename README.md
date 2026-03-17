@@ -12,7 +12,7 @@ for a similar project about HP printers.
 
 ## :star: Features
 
-TL;DR: No encryption for the Wi-Fi crendentials on the EEPROM :thumbsup: :poop:.
+TL;DR: No encryption for the Wi-Fi credentials on the EEPROM :thumbsup: :poop:.
 
 - Recover the serial number and the network name of the printer
 - Recover the ESSID and the password of the Wi-Fi access point configured on the printer
