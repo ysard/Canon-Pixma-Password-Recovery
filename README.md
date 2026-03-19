@@ -27,7 +27,7 @@ The following offsets are serious candidates:
 ## Targeted EEPROM
 
 On the reverse side of the PCB, dump the content of the EEPROM.
-It's an Winbond EEPROM of the type W25Q64JVSIQ, using the protocol SPI.
+It's a Winbond EEPROM of the type W25Q64JVSIQ, using the protocol SPI.
 
 [![](./assets/pcb_eeprom_small.webp)](./assets/pcb_eeprom_small.webp)
 
