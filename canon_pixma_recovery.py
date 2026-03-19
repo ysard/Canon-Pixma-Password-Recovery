@@ -83,6 +83,8 @@ DATA = {
         (0x000278B2, 0),
     ],
     ("5.1.", "PRINTER_NAME"): [(0x00011A54, 0), (0x00021A54, 0)],
+    ("", "DIRECT_UI_PASS_HASH"): [(0x1b0, 64), (0x11b0, 64), (0x101b0, 64), (0x201b0, 64)],
+    # ("", "DIRECT_UI_PASS_HASH_SLOT_STATUS"): [(0x000001F0, 1), (0x000011F0, 1), (0x000101F0, 1), (0x000201F0, 1)],
 }
 
 
@@ -128,9 +130,33 @@ def extract_multi_pos(f_d, positions, debug=False) -> str:
         # Length of data is known
         data = f_d.read(length)
         if debug:
-            print(data, data.decode())
+            print(hex(pos), data, data.decode(), f_d.read(1))
 
         text_entries.add(data.decode())
+
+    return ", ".join(text_entries)
+
+
+def extract_pass_hash(f_d, positions, debug=False) -> str:
+    """Get the hashes of the password and the status of the password for each slot
+
+    There are 4 slots, the hash (sha256) is followed by 1 byte that is 0 if the
+    administration password is disabled. The hash is an unknown reshash of the
+    hash obtained from the UI made with the user's password.
+
+    These fields are somewhat protected against modifications...
+    P09 errors are obtained if the slots are modified.
+    """
+    text_entries = []
+    for pos, length in positions:
+        f_d.seek(pos)
+        # Length of data is known
+        data = f_d.read(length)
+        slot_status = f_d.read(1)
+        if debug:
+            print(hex(pos), data, data.decode(), slot_status)
+
+        text_entries.append(f"\n    {data.decode()}: {str(slot_status == b"\x01")}")
 
     return ", ".join(text_entries)
 
@@ -143,11 +169,14 @@ def extractor(f_d, debug=False):
     :type f_d: io.TextIOWrapper
     :type debug: bool
     """
+    pass_hash_key = ("", "DIRECT_UI_PASS_HASH")
     data = {
         key: extract_multi_pos(f_d, positions, debug=debug)
         for key, positions in DATA.items()
-        if positions
+        if positions and key != pass_hash_key
     }
+    # Special text disposition here
+    data[pass_hash_key] = extract_pass_hash(f_d, DATA[pass_hash_key], debug=debug)
 
     for (chapter, name), text in data.items():
         if name == "DIRECT_PASS" and not text:
